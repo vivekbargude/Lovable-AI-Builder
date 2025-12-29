@@ -4,8 +4,13 @@ import com.vivek.projects.lovable_clone.dto.project.ProjectRequest;
 import com.vivek.projects.lovable_clone.dto.project.ProjectResponse;
 import com.vivek.projects.lovable_clone.dto.project.ProjectSummaryResponse;
 import com.vivek.projects.lovable_clone.entity.Project;
+import com.vivek.projects.lovable_clone.entity.ProjectMember;
+import com.vivek.projects.lovable_clone.entity.ProjectMemberId;
 import com.vivek.projects.lovable_clone.entity.User;
+import com.vivek.projects.lovable_clone.enums.ProjectRole;
+import com.vivek.projects.lovable_clone.error.ResourceNotFoundException;
 import com.vivek.projects.lovable_clone.mapper.ProjectMapper;
+import com.vivek.projects.lovable_clone.repository.ProjectMemberRepository;
 import com.vivek.projects.lovable_clone.repository.ProjectRepository;
 import com.vivek.projects.lovable_clone.repository.UserRepository;
 import com.vivek.projects.lovable_clone.service.ProjectService;
@@ -27,6 +32,7 @@ import java.util.Optional;
 public class ProjectServiceImpl implements ProjectService {
 
     ProjectRepository projectRepository;
+    ProjectMemberRepository projectMemberRepository;
     UserRepository userRepository;
     ProjectMapper projectMapper;
 
@@ -37,10 +43,24 @@ public class ProjectServiceImpl implements ProjectService {
 
         Project project = Project.builder()
                 .name(request.name())
-                .owner(owner)
                 .isPublic(false)
                 .build();
+
         project = projectRepository.save(project);
+
+        ProjectMemberId projectMemberId = new ProjectMemberId(project.getId(), owner.getId());
+        ProjectMember projectMember = ProjectMember.builder()
+                .id(projectMemberId)
+                .projectRole(ProjectRole.OWNER)
+                .user(owner)
+                .acceptedAt(Instant.now())
+                .invitedAt(Instant.now())
+                .project(project)
+                .build();
+
+        projectMemberRepository.save(projectMember);
+
+
 
         return projectMapper.toProjectResponse(project);
     }
@@ -69,6 +89,12 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
         Project project = getAccessibleProjectById(id, userId);
 
+
+        //Check whether user is owner or not.
+//        if(!project.getOwner().getId().equals(userId)) {
+//            throw new RuntimeException("You are not allowed to delete");
+//        }
+
         project.setName(request.name());
         project = projectRepository.save(project);
         return projectMapper.toProjectResponse(project);
@@ -79,9 +105,9 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = getAccessibleProjectById(id, userId);
 
         //Check whether user is owner or not.
-        if(!project.getOwner().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to delete");
-        }
+//        if(!project.getOwner().getId().equals(userId)) {
+//            throw new RuntimeException("You are not allowed to delete");
+//        }
 
         project.setDeletedAt(Instant.now());
         projectRepository.save(project);
@@ -91,6 +117,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     //Get all accessible projects by user as (owner + member).
     public Project getAccessibleProjectById(Long projectId, Long userId) {
-        return projectRepository.findAccessibleProjectById(projectId, userId).orElseThrow();
+        return projectRepository.findAccessibleProjectById(projectId, userId)
+                .orElseThrow(()-> new ResourceNotFoundException("Project",projectId.toString()));
     }
 }

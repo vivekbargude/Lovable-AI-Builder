@@ -6,6 +6,7 @@ import com.vivek.projects.lovable_clone.dto.auth.SignupRequest;
 import com.vivek.projects.lovable_clone.dto.auth.UserProfileResponse;
 import com.vivek.projects.lovable_clone.service.AuthService;
 import com.vivek.projects.lovable_clone.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class AuthController {
     UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> signup(@RequestBody @Valid SignupRequest request) {
         return ResponseEntity.ok(authService.signup(request));
     }
 
