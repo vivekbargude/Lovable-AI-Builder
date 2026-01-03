@@ -3,7 +3,6 @@ package com.vivek.projects.lovable_clone.controller;
 import com.vivek.projects.lovable_clone.dto.project.ProjectRequest;
 import com.vivek.projects.lovable_clone.dto.project.ProjectResponse;
 import com.vivek.projects.lovable_clone.dto.project.ProjectSummaryResponse;
-import com.vivek.projects.lovable_clone.security.AuthUtil;
 import com.vivek.projects.lovable_clone.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

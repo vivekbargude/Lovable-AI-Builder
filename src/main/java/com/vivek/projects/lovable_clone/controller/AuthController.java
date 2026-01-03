@@ -8,7 +8,6 @@ import com.vivek.projects.lovable_clone.service.AuthService;
 import com.vivek.projects.lovable_clone.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;

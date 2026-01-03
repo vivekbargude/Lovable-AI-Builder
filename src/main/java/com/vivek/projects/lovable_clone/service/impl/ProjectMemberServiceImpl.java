@@ -16,10 +16,10 @@ import com.vivek.projects.lovable_clone.service.ProjectMemberService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,17 +34,19 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     AuthUtil authUtil;
 
     @Override
+    @PreAuthorize("@security.canViewMembers(#projectId)")
     public List<MemberResponse> getProjectMembers(Long projectId) {
         Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProjectById(projectId, userId);
 
         return projectMemberRepository.findByIdProjectId(projectId)
-                        .stream()
-                        .map(projectMemberMapper::toProjectMemberResponseFromMember)
-                        .toList();
+                .stream()
+                .map(projectMemberMapper::toProjectMemberResponseFromMember)
+                .toList();
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public MemberResponse inviteMember(Long projectId, InviteMemberRequest request) {
         Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProjectById(projectId, userId);
@@ -54,13 +56,13 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
         User invitee = userRepository.findByUsername(request.username()).orElseThrow();
 
-        if(invitee.getId().equals(userId)){
+        if (invitee.getId().equals(userId)) {
             throw new RuntimeException("Can't invite yourself");
         }
 
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, invitee.getId());
 
-        if(projectMemberRepository.existsById(projectMemberId)){
+        if (projectMemberRepository.existsById(projectMemberId)) {
             throw new RuntimeException("Can't invite once again.");
         }
 
@@ -78,6 +80,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request) {
         Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProjectById(projectId, userId);
@@ -95,6 +98,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public void removeProjectMember(Long projectId, Long memberId) {
         Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProjectById(projectId, userId);
@@ -103,7 +107,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 //        }
 
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
-        if(!projectMemberRepository.existsById(projectMemberId)){
+        if (!projectMemberRepository.existsById(projectMemberId)) {
             throw new RuntimeException("Member doesn't exists.");
         }
 

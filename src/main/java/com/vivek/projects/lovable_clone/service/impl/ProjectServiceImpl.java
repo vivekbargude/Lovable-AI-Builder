@@ -17,14 +17,13 @@ import com.vivek.projects.lovable_clone.security.AuthUtil;
 import com.vivek.projects.lovable_clone.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -87,20 +86,21 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.toListOfProjectSummaryResponse(projectRepository.findAllAccessibleByUser(userId));
 
     }
-
     @Override
-    public ProjectResponse getUserProjectById(Long id) {
+    @PreAuthorize("@security.canViewProject(#projectId)")
+    public ProjectResponse getUserProjectById(Long projectId) {
         Long userId = authUtil.getCurrentUserId();
-        Project project = getAccessibleProjectById(id, userId);
+        Project project = getAccessibleProjectById(projectId, userId);
         return projectMapper.toProjectResponse(project);
     }
 
 
 
     @Override
-    public ProjectResponse updateProject(Long id, ProjectRequest request) {
+    @PreAuthorize("@security.canEditProject(#projectId)")
+    public ProjectResponse updateProject(Long projectId, ProjectRequest request) {
         Long userId = authUtil.getCurrentUserId();
-        Project project = getAccessibleProjectById(id, userId);
+        Project project = getAccessibleProjectById(projectId, userId);
 
 
         //Check whether user is owner or not.
@@ -114,9 +114,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void softDelete(Long id) {
+    @PreAuthorize("@security.canDeleteProject(#projectId)")
+    public void softDelete(Long projectId) {
         Long userId = authUtil.getCurrentUserId();
-        Project project = getAccessibleProjectById(id, userId);
+        Project project = getAccessibleProjectById(projectId, userId);
 
         //Check whether user is owner or not.
 //        if(!project.getOwner().getId().equals(userId)) {
