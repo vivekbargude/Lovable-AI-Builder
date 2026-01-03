@@ -12,5 +12,7 @@ public enum ProjectPermission {
     MANAGE_MEMBERS("project_members:manage"),
     VIEW_MEMBERS("project_members:view");
 
+
+
     private final String value;
 }

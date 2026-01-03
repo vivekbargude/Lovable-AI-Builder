@@ -14,9 +14,5 @@ public enum ProjectRole {
     EDITOR(Set.of(EDIT,VIEW,DELETE,VIEW_MEMBERS)),
     OWNER(Set.of(EDIT,VIEW,MANAGE_MEMBERS,DELETE,VIEW_MEMBERS));
 
-    ProjectRole(ProjectPermission... permissions) {
-        this.permissions = Set.of(permissions);
-    }
-
     private final Set<ProjectPermission> permissions;
 }

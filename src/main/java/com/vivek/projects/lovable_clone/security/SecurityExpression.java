@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SecurityExpression {
 
+
+
     private final ProjectMemberRepository projectMemberRepository;
     private final AuthUtil authUtil;
 
